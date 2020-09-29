@@ -1,7 +1,8 @@
-*/__pycache__
 
 datasets/demo/train2014
 datasets/demo/val2014
 
 configs/R-50.pkl
 configs/R-101.pkl
+
+*/__pycache__
