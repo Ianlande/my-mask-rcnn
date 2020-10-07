@@ -145,23 +145,23 @@ def build_transforms(cfg, is_train=True):
         hue = 0.0
 
     to_bgr255 = cfg.INPUT.TO_BGR255
-    normalize_transform = T.Normalize(
+    normalize_transform = Normalize(
         mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD, to_bgr255=to_bgr255
     )
-    color_jitter = T.ColorJitter(
+    color_jitter = ColorJitter(
         brightness=brightness,
         contrast=contrast,
         saturation=saturation,
         hue=hue,
     )
 
-    transform = T.Compose(
+    transform = Compose(
         [
             color_jitter,
-            T.Resize(min_size, max_size),
-            T.RandomHorizontalFlip(flip_horizontal_prob),
-            T.RandomVerticalFlip(flip_vertical_prob),
-            T.ToTensor(),
+            Resize(min_size, max_size),
+            RandomHorizontalFlip(flip_horizontal_prob),
+            RandomVerticalFlip(flip_vertical_prob),
+            ToTensor(),
             normalize_transform,
         ]
     )

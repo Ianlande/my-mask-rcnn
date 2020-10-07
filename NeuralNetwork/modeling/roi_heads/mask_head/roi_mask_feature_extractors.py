@@ -4,9 +4,9 @@ from torch import nn
 from torch.nn import functional as F
 
 from ..box_head.roi_box_feature_extractors import ResNet50Conv5ROIFeatureExtractor
-from NeuralNetwork.modeling import registry
-from NeuralNetwork.modeling.poolers import Pooler
-from NeuralNetwork.modeling.make_layers import make_conv3x3
+from NeuralNetwork.modeling.utils import registry
+from NeuralNetwork.modeling.utils.poolers import Pooler
+from NeuralNetwork.modeling.utils.make_layers import make_conv3x3
 
 
 registry.ROI_MASK_FEATURE_EXTRACTORS.register(

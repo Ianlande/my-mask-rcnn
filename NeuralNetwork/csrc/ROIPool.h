@@ -1,12 +1,9 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 #pragma once
-
 #include "cpu/vision.h"
 
 #ifdef WITH_CUDA
 #include "cuda/vision.h"
 #endif
-
 
 std::tuple<at::Tensor, at::Tensor> ROIPool_forward(const at::Tensor& input,
                                 const at::Tensor& rois,
@@ -43,6 +40,3 @@ at::Tensor ROIPool_backward(const at::Tensor& grad,
   }
   AT_ERROR("Not implemented on the CPU");
 }
-
-
-

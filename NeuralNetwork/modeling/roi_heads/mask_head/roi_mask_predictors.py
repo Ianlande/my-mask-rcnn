@@ -3,9 +3,9 @@
 from torch import nn
 from torch.nn import functional as F
 
-from NeuralNetwork.layers import Conv2d
-from NeuralNetwork.layers import ConvTranspose2d
-from NeuralNetwork.modeling import registry
+from NeuralNetwork.layers.misc import Conv2d
+from NeuralNetwork.layers.misc import ConvTranspose2d
+from NeuralNetwork.modeling.utils import registry
 
 
 @registry.ROI_MASK_PREDICTOR.register("MaskRCNNC4Predictor")

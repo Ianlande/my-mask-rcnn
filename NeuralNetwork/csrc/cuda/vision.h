@@ -1,4 +1,3 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 #pragma once
 #include <torch/extension.h>
 
@@ -36,7 +35,6 @@ at::Tensor ROIAlign_backward_cuda(const at::Tensor& grad,
                                   const int width,
                                   const int sampling_ratio);
 
-
 std::tuple<at::Tensor, at::Tensor> ROIPool_forward_cuda(const at::Tensor& input,
                                 const at::Tensor& rois,
                                 const float spatial_scale,
@@ -56,7 +54,6 @@ at::Tensor ROIPool_backward_cuda(const at::Tensor& grad,
                                  const int width);
 
 at::Tensor nms_cuda(const at::Tensor boxes, float nms_overlap_thresh);
-
 
 int deform_conv_forward_cuda(at::Tensor input, at::Tensor weight,
                              at::Tensor offset, at::Tensor output,
@@ -109,7 +106,6 @@ void deform_psroi_pooling_cuda_backward(
     const int no_trans, const float spatial_scale, const int output_dim,
     const int group_size, const int pooled_size, const int part_size,
     const int sample_per_part, const float trans_std);
-
 
 at::Tensor compute_flow_cuda(const at::Tensor& boxes,
                              const int height,

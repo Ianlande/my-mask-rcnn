@@ -4,11 +4,11 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from NeuralNetwork.modeling import registry
+from NeuralNetwork.modeling.utils import registry
 from NeuralNetwork.modeling.backbone import resnet
-from NeuralNetwork.modeling.poolers import Pooler
-from NeuralNetwork.modeling.make_layers import group_norm
-from NeuralNetwork.modeling.make_layers import make_fc
+from NeuralNetwork.modeling.utils.poolers import Pooler
+from NeuralNetwork.modeling.utils.make_layers import group_norm
+from NeuralNetwork.modeling.utils.make_layers import make_fc
 
 
 @registry.ROI_BOX_FEATURE_EXTRACTORS.register("ResNet50Conv5ROIFeatureExtractor")

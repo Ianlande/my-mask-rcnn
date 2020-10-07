@@ -1,4 +1,3 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 #pragma once
 
 #include "cpu/vision.h"
@@ -43,4 +42,3 @@ at::Tensor ROIAlign_backward(const at::Tensor& grad,
   }
   AT_ERROR("Not implemented on the CPU");
 }
-

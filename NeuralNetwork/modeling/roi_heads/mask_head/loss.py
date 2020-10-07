@@ -5,7 +5,7 @@ from torch.nn import functional as F
 
 from NeuralNetwork.layers.smooth_l1_loss import smooth_l1_loss
 from NeuralNetwork.modeling.utils.matcher import Matcher
-from NeuralNetwork.structures.utils.boxlist_ops import boxlist_iou
+from NeuralNetwork.structures.boxlist_ops import boxlist_iou
 from NeuralNetwork.modeling.utils.cat import cat
 
 

@@ -7,7 +7,7 @@ Implements the Generalized R-CNN framework
 import torch
 from torch import nn
 
-from .NeuralNetwork.structures.image_list import to_image_list
+from NeuralNetwork.structures.image_list import to_image_list
 
 from ..backbone.backbone import build_backbone
 from ..rpn.rpn import build_rpn

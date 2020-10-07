@@ -4,7 +4,6 @@ import PIL
 
 from torch.utils.collect_env import get_pretty_env_info
 
-
 def get_pil_version():
     return "\n        Pillow ({})".format(PIL.__version__)
 

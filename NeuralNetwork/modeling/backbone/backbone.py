@@ -14,8 +14,8 @@ from torch import nn
 # 注册器, 用于管理 module 的注册, 使得可以像使用字典一样使用 module
 from NeuralNetwork.modeling.utils import registry
 from NeuralNetwork.modeling.utils.make_layers import conv_with_kaiming_uniform
-import fpn as fpn_module
-import resnet
+from . import fpn as fpn_module
+from . import resnet
 
 
 # 创建网络, 根据配置信息会被下面的 build_backbone 函数调用

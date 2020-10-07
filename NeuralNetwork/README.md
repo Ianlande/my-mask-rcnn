@@ -22,7 +22,4 @@
 
 ## structures 模块: 底层数据结构的功能函数
 
-## csrc 模块: c++的一些功能函数, 会被pytorch当作第三方扩展模块调用, 内部含有网络结构的重要功能
-使用 setup.py 时, 会将 csrc 中的功能函数以及 NeuralNetwork 模块一并打包入第三方库, 然后运行时被调用  
-
 ## utils: 工具包

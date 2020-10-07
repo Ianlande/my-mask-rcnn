@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from NeuralNetwork.modeling import registry
+from NeuralNetwork.modeling.utils import registry
 from NeuralNetwork.modeling.utils.box_coder import BoxCoder
 from .loss import make_rpn_loss_evaluator
 from .anchor_generator import make_anchor_generator

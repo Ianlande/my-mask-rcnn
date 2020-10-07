@@ -16,7 +16,7 @@ from NeuralNetwork.utils.env import setup_environment  # noqa F401 isort:skip
 from NeuralNetwork.config import cfg
 from NeuralNetwork.data.build import make_data_loader
 from NeuralNetwork.engine.inference import inference
-from NeuralNetwork.modeling.detector import build_detection_model
+from NeuralNetwork.modeling.detector.detectors import build_detection_model
 
 from NeuralNetwork.utils.checkpoint import DetectronCheckpointer
 from NeuralNetwork.utils.collect_env import collect_env_info

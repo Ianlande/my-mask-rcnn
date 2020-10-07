@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 
-from generalized_rcnn import GeneralizedRCNN
+from .generalized_rcnn import GeneralizedRCNN
 
 _DETECTION_META_ARCHITECTURES = {"GeneralizedRCNN": GeneralizedRCNN}
 

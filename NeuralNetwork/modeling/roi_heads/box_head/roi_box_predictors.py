@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 
-from NeuralNetwork.modeling import registry
+from NeuralNetwork.modeling.utils import registry
 from torch import nn
 
 

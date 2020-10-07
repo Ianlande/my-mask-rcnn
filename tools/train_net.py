@@ -7,8 +7,8 @@ import torch
 
 
 # 设置一下当前地址, 否则无法查找到 NeuralNetwork 模块
-this_dir = os.path.dirname(os.path.abspath(__file__))
-this_dir = os.path.dirname(this_dir)
+this_dir = os.path.dirname(os.path.abspath(__file__)) # 获得此程序地址, 即 tools 地址
+this_dir = os.path.dirname(this_dir) # 获取项目地址
 sys.path.append(this_dir)
 
 from NeuralNetwork.utils.env import setup_environment
@@ -19,7 +19,7 @@ from NeuralNetwork.solver import make_lr_scheduler # 学习率更新策略, 接�
 from NeuralNetwork.solver import make_optimizer # 设置优化器, 封装PyTorch的SGD类, 接口在 solver/__init__.py, 即 solver/build.py
 from NeuralNetwork.engine.inference import inference # 推演代码
 from NeuralNetwork.engine.trainer import do_train # 模型训练
-from NeuralNetwork.modeling.detector import build_detection_model # 创建目标检测模型
+from NeuralNetwork.modeling.detector.detectors import build_detection_model # 创建目标检测模型
 
 from NeuralNetwork.utils.checkpoint import DetectronCheckpointer
 from NeuralNetwork.utils.collect_env import collect_env_info
@@ -157,7 +157,7 @@ def run_test(cfg, model, distributed):
 
 def main():
     parser = argparse.ArgumentParser(description="PyTorch Object Detection Training")
-    parser.add_argument("--config-file",default=r"D:\MyNetWork\Single_channel_weak_feature_object_detection_and_ pose_estimation\configs\e2e_mask_rcnn_R_50_FPN_1gpu_1x_demo.yaml",metavar="FILE",help="path to config file",type=str)
+    parser.add_argument("--config_file",default=r"D:\MyNetWork\Single_channel_weak_feature_object_detection_and_ pose_estimation\configs\e2e_mask_rcnn_R_50_FPN_1gpu_1x_demo.yaml",metavar="FILE",help="path to config file",type=str)
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--skip-test",dest="skip_test",help="Do not test the final model",action="store_true")
     parser.add_argument("opts",help="Modify config options using the command-line",default=None,nargs=argparse.REMAINDER)

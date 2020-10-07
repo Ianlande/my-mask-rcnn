@@ -6,10 +6,58 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from NeuralNetwork import _C
-#from ._utils import _C
-
 from apex import amp
+
+'''
+def bilinear_interpolate(
+                         height,
+                         width,
+                         pooled_height,
+                         pooled_width,
+                         iy_upper,
+                         ix_upper,
+                         roi_start_h,
+                         roi_start_w,
+                         bin_size_h,
+                         bin_size_w,
+                         roi_bin_grid_h,
+                         roi_bin_grid_w
+                         ):
+    pass
+
+def RoIAlignForward_kernel():
+    pass
+
+def roi_align_forward(input, rois, spatial_scale, pooled_height, pooled_width, sampling_ratio):
+    num_rois = rois.size(0)
+    channels = input.size(1)
+    height = input.size(2)
+    width = input.size(3)
+    
+    output = empty({num_rois, channels, pooled_height, pooled_width}, input.options())
+    output_size = num_rois * pooled_height * pooled_width * channels
+    
+    if output.numel() == 0 :
+        return output
+    
+    RoIAlignForward_kernel(
+                           output_size,
+                           input.data(),
+                           spatial_scale,
+                           channels,
+                           height,
+                           width,
+                           pooled_height,
+                           pooled_width,
+                           sampling_ratio,
+                           rois.data(),
+                           output.data()
+                           )
+    
+    
+def roi_align_backward():
+    pass
+'''
 
 class _ROIAlign(Function):
     @staticmethod
@@ -19,7 +67,7 @@ class _ROIAlign(Function):
         ctx.spatial_scale = spatial_scale
         ctx.sampling_ratio = sampling_ratio
         ctx.input_shape = input.size()
-        output = _C.roi_align_forward(
+        output = roi_align_forward(
             input, roi, spatial_scale, output_size[0], output_size[1], sampling_ratio
         )
         return output
@@ -32,7 +80,7 @@ class _ROIAlign(Function):
         spatial_scale = ctx.spatial_scale
         sampling_ratio = ctx.sampling_ratio
         bs, ch, h, w = ctx.input_shape
-        grad_input = _C.roi_align_backward(
+        grad_input = roi_align_backward(
             grad_output,
             rois,
             spatial_scale,
@@ -58,6 +106,8 @@ class ROIAlign(nn.Module):
 
     @amp.float_function
     def forward(self, input, rois):
+        print('input:  ',input)
+        print('rois:  ',rois)
         return roi_align(
             input, rois, self.output_size, self.spatial_scale, self.sampling_ratio
         )
