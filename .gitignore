@@ -6,6 +6,17 @@ configs/R-50.pkl
 configs/R-101.pkl
 
 */__pycache__
+NeuralNetwork/data/coco/__pycache__
+NeuralNetwork/engine/__pycache__
+NeuralNetwork/layers/__pycache__
+NeuralNetwork/modeling/backbone/__pycache__
+NeuralNetwork/modeling/detector/__pycache__
+NeuralNetwork/modeling/roi_heads/__pycache__
+NeuralNetwork/modeling/roi_heads/box_head/__pycache__
+NeuralNetwork/modeling/roi_heads/mask_head/__pycache__
+NeuralNetwork/modeling/rpn/__pycache__
+NeuralNetwork/modeling/utils/__pycache__
+NeuralNetwork/utils/__pycache__
 
 labels.json
 log.txt
