@@ -6,7 +6,7 @@ configs/R-50.pkl
 configs/R-101.pkl
 
 */__pycache__
-*/*/__pycache__
+NeuralNetwork/*/__pycache__
 */*/*/__pycache__
 */*/*/*/__pycache__
 
