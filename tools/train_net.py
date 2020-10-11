@@ -157,7 +157,7 @@ def run_test(cfg, model, distributed):
 
 def main():
     parser = argparse.ArgumentParser(description="PyTorch Object Detection Training")
-    parser.add_argument("--config_file",default=r"D:\MyNetWork\Single_channel_weak_feature_object_detection_and_ pose_estimation\configs\e2e_mask_rcnn_R_50_FPN_1gpu_1x_demo.yaml",metavar="FILE",help="path to config file",type=str)
+    parser.add_argument("--config_file",default=r"configs\e2e_mask_rcnn_R_50_FPN_1gpu_1x_demo.yaml",metavar="FILE",help="path to config file",type=str)
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--skip-test",dest="skip_test",help="Do not test the final model",action="store_true")
     parser.add_argument("opts",help="Modify config options using the command-line",default=None,nargs=argparse.REMAINDER)

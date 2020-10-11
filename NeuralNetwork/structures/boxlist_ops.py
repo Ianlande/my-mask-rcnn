@@ -4,7 +4,7 @@ import torch
 
 from .bounding_box import BoxList
 
-from NeuralNetwork.layers import nms as _box_nms
+from NeuralNetwork.layers.nms import nms as _box_nms
 
 
 def boxlist_nms(boxlist, nms_thresh, max_proposals=-1, score_field="scores"):
@@ -25,6 +25,11 @@ def boxlist_nms(boxlist, nms_thresh, max_proposals=-1, score_field="scores"):
     boxlist = boxlist.convert("xyxy")
     boxes = boxlist.bbox
     score = boxlist.get_field(score_field)
+    '''
+    print('boxes:   ',boxes)
+    print('score: ',score)
+    print('nms_thresh:  ',nms_thresh)
+    '''
     keep = _box_nms(boxes, score, nms_thresh)
     if max_proposals > 0:
         keep = keep[: max_proposals]
