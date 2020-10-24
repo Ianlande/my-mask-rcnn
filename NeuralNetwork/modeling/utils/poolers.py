@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from torch import nn
 
 from NeuralNetwork.layers.roi_align import ROIAlign
-#from NeuralNetwork.layers.compare import ROIAlign
 
 from .cat import cat
 

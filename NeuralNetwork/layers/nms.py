@@ -16,7 +16,7 @@ def nms(dets_cuda, scores_cuda, threshold):
     y1 = dets[:,1]
     x2 = dets[:,2]
     y2 = dets[:,3]
-        
+    
     areas = (y2-y1+1) * (x2-x1+1)
     
     # scores 从大到小排列的索引号, argsort(descending=True): 从大到小

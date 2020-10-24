@@ -101,6 +101,7 @@ def bilinear_interpolate_kernel(bottom_data, height, width, y_sample_num, x_samp
 roi align 前向传播
 input : tensor, 卷积后的 feature map, 一共有 batch_size 个
 rois : tensor, 一共有 batch_size 个, 每个 batch_size 中有多个 roi
+spatial_scale : 比原图缩小了多少, eg: 0.25
 pooled_height, pooled_width : int, 表示一个 roi 的横宽划分成几个 bin (几份), 一般都取 7
 sampling_ratio : int, 表示每一个 bin 采样多少点
 
@@ -121,7 +122,7 @@ def roi_align_forward(input, rois, spatial_scale, pooled_height, pooled_width, s
         device = "cpu"
     
     # offset 是让 roi 缩小的辅助张量
-    offset = torch.empty(num_rois, 5) + 1 # 随机生成张量, 加1是为了防止生成的元素为0导致后续无法乘积
+    offset = torch.zeros(num_rois, 5)
     offset = offset.to(device)
     offset[:,1:5] = spatial_scale
     offset[:,0] = rois[:,0]
@@ -133,7 +134,7 @@ def roi_align_forward(input, rois, spatial_scale, pooled_height, pooled_width, s
     # 全1张量, 用于计算
     ones = torch.zeros(1,num_rois) + 1.0
     ones = ones.to(device)
-        
+    
     roi_width = torch.max(offset_rois[:,3] - offset_rois[:,1], ones) # roi 的长宽
     roi_height = torch.max(offset_rois[:,4] - offset_rois[:,2], ones) # roi 的长宽
     bin_size_w = roi_width / pooled_width # 每个 bin 的长宽
@@ -187,7 +188,7 @@ def roi_align_forward(input, rois, spatial_scale, pooled_height, pooled_width, s
     x = offset_rois[:,1].reshape(num_rois,1) + temp3.t()
     
     # 初始化 output
-    output = torch.tensor([]).to(device)
+    output = torch.zeros(num_rois, channels, pooled_height, pooled_width).to(device)
     
     # 遍历每一个 roi
     for each in range(num_rois):
@@ -203,9 +204,160 @@ def roi_align_forward(input, rois, spatial_scale, pooled_height, pooled_width, s
             channel 个维度, 各维度是 m*n 个 bin, 每个 bin 只有一个值, 即计算出来的平均值
         """
         val = bilinear_interpolate_kernel(input[roi_batch_ind], height, width, sampling_ratio, sampling_ratio, y[each], x[each], device)
-        output = torch.cat([output,val.unsqueeze(0)],dim=0)
+        output[each] = val
         
     return output
+
+
+def bilinear_interpolate_gradient(bottom_data, grad_input, roi_batch_ind, height, width, sampling_ratio_h, sampling_ratio_w, y, x, count, device):
+    # 防止超出 bin 的范围, 
+    # 当下界低于 0 但是不低于 -1 时还可以补救, 将值变为 0 即可, 因为 f(0,0),f(0,1) 是向下取整
+    for each in y:
+        if each < -1.0 or each > height:
+            return 0
+    for each in x:
+        if each < -1.0 or each > width:
+            return 0 
+    
+    # 正常的 y 取值在 0-(height-1) 之间, 一共 height 大小, x 同理
+    y = y.clamp(0, height-1)
+    x = x.clamp(0, width-1)
+    
+    # f(0,0),f(0,1) 分别是 x,y 向下取整; clamp 限制范围
+    y_low = y.floor().clamp(0, height-1)
+    x_low = x.floor().clamp(0, width-1)
+    
+    # f(0,0),f(0,1) 分别是 x,y 向下取整; f(1,0),f(1,1) 理论上分别是 f(0,0)+1,f(0,1)+1 , 除非位置不够
+    y_high = y_low + 1
+    y_high = y_high.clamp(0, height-1)
+    x_high = x_low + 1
+    x_high = x_high.clamp(0, width-1)
+    
+    # 以下开始, 已经换坐标系了, 改为 xy 所在像素格的坐标系
+    ly = y - y_low
+    lx = x - x_low
+    hy = 1.0 - ly
+    hx = 1.0 - lx
+    
+    y_low = y_low.long()
+    x_low = x_low.long()
+    y_high = y_high.long()
+    x_high = x_high.long()
+    
+    m = len(hy)
+    n = len(ly)
+    w1 = hy.reshape(m,1) * hx
+    w2 = hy.reshape(m,1) * lx
+    w3 = ly.reshape(n,1) * hx
+    w4 = ly.reshape(n,1) * lx
+    
+    bottom_data_c = bottom_data.size(-3)
+    bottom_data_h = bottom_data.size(-2)
+    bottom_data_w = bottom_data.size(-1)
+    
+    temp1 = torch.zeros(bottom_data_c, bottom_data_h*sampling_ratio_h, bottom_data_w).to(device)
+    for each in range(sampling_ratio_h):
+        temp1[:,each::sampling_ratio_h] = bottom_data
+    
+    bottom_data_extend = torch.zeros(bottom_data_c, bottom_data_h*sampling_ratio_h, bottom_data_w*sampling_ratio_w).to(device)
+    for each in range(sampling_ratio_w):
+        bottom_data_extend[:,:,each::sampling_ratio_w] = temp1
+    
+    # bottom_data: 256 * 14 * 14
+    # bottom_data_extend: 256 * 28 * 28
+    # w: 28 * 28
+    # g: 256 * 28 * 28
+    g1 = bottom_data_extend * w1 / count
+    g2 = bottom_data_extend * w2 / count
+    g3 = bottom_data_extend * w3 / count
+    g4 = bottom_data_extend * w4 / count
+    
+    for eachy in range(len(y_low)):
+        for eachx in range(len(x_low)):
+            grad_input[roi_batch_ind,:,y_low[eachy],x_low[eachx]] += g1[:,eachy,eachx]
+        for eachx in range(len(x_high)):
+            grad_input[roi_batch_ind,:,y_low[eachy],x_high[eachx]] += g2[:,eachy,eachx]
+    for eachy in range(len(y_high)):
+        for eachx in range(len(x_low)):
+            grad_input[roi_batch_ind,:,y_high[eachy],x_low[eachx]] += g3[:,eachy,eachx]
+        for eachx in range(len(x_high)):
+            grad_input[roi_batch_ind,:,y_high[eachy],x_high[eachx]] += g4[:,eachy,eachx]
+    
+    return grad_input
+
+
+"""
+roi align 反向传播
+"""
+def roi_align_backward(grad, rois, spatial_scale, pooled_height, pooled_width, batch_size, channels, height, width, sampling_ratio):
+    # grad_size, eg: torch.Size([1, 256, 14, 14])
+    #print("grad_size:   ", grad.size())
+    num_rois = rois.size(0) # roi的个数
+    
+    if cfg.MODEL.DEVICE == "cuda":
+        device = "cuda"
+    else:
+        device = "cpu"
+    
+    # offset 是辅助张量
+    offset = torch.zeros(num_rois, 5)
+    offset = offset.to(device)
+    offset[:,1:5] = spatial_scale
+    offset[:,0] = rois[:,0]
+    offset_rois = rois * offset
+    
+    # 全1张量, 用于计算
+    ones = torch.zeros(1,num_rois) + 1.0
+    ones = ones.to(device)
+    
+    roi_width = torch.max(offset_rois[:,3] - offset_rois[:,1], ones)
+    roi_height = torch.max(offset_rois[:,4] - offset_rois[:,2], ones)
+    bin_size_w = roi_width / pooled_width
+    bin_size_h = roi_height / pooled_height
+    
+    roi_bin_grid_w = sampling_ratio
+    roi_bin_grid_h = sampling_ratio
+    
+    count = roi_bin_grid_w * roi_bin_grid_h
+    
+    ph = torch.Tensor(list((range(pooled_height)))).to(device)
+    pw = torch.Tensor(list((range(pooled_width)))).to(device)
+    iy = torch.Tensor(list((range(roi_bin_grid_h)))).to(device)
+    ix = torch.Tensor(list((range(roi_bin_grid_w)))).to(device)
+    
+    # 计算 y
+    temp1 = (bin_size_h.t() * ph).t()
+    temp2 = ((bin_size_h / roi_bin_grid_h).t() * (iy + 0.5)).t()
+    temp3 = torch.tensor([]).to(device)
+    for each in temp1:
+        submatrix = each + temp2
+        temp3 = torch.cat([temp3,submatrix],dim=0)
+    y = offset_rois[:,2].reshape(num_rois,1) + temp3.t()
+    
+    # 计算 x
+    temp1 = (bin_size_w.t() * pw).t()
+    temp2 = ((bin_size_w / roi_bin_grid_w).t() * (ix + 0.5)).t()
+    temp3 = torch.tensor([]).to(device)
+    for each in temp1:
+        submatrix = each + temp2
+        temp3 = torch.cat([temp3,submatrix],dim=0)
+    x = offset_rois[:,1].reshape(num_rois,1) + temp3.t()
+    
+    # ======= 以上与 forward 一致, 以下是计算梯度 =======
+    
+    # 初始化输出
+    grad_input = torch.zeros(batch_size, channels, height, width).to(device)
+    
+    if pooled_height == pooled_width:
+        pooled_num = pooled_height
+    
+    # 遍历每一个 roi
+    for each in range(num_rois):
+        # roi batch index
+        roi_batch_ind = int(offset_rois[each][0])
+        grad_input = bilinear_interpolate_gradient(grad[0], grad_input, roi_batch_ind, height, width, sampling_ratio, sampling_ratio, y[each], x[each], count, device)
+        
+    return grad_input
 
 
 class _ROIAlign(Function):
